@@ -1,81 +1,73 @@
 #include <stdio.h>
+#include "graph.h"
+#include "topo_sort.h"
+#include "schedule.h"
 
-#define MAXN 10  // max antal noder i grafen
+int main(void)
+{
+    // Example tasks (A..F)
+    // Dependencies: A->D, B->D, C->E, D->F, E->F
+    // Durations:    A=3, B=2, C=4, D=5, E=1, F=2
 
-// Kahn's algorithm för topologisk sortering
-void topo_sort_kahn(int n, int adj[MAXN][MAXN], int result[]) {
-    int indegree[MAXN] = {0};
-    int queue[MAXN];
-    int front = 0, back = 0;
+    const int n = 6;
+    const char *names[6] = {"A", "B", "C", "D", "E", "F"};
+    int duration[6] = {3, 2, 4, 5, 1, 2};
 
-    // 1. Beräkna indegree för alla noder
-    for (int j = 0; j < n; j++) {
-        indegree[j] = 0;
-        for (int i = 0; i < n; i++) {
-            if (adj[i][j] == 1) {
-                indegree[j]++;
-            }
-        }
+    Graph g = graph_create(n);
+    graph_add_edge(&g, 0, 3); // A->D
+    graph_add_edge(&g, 1, 3); // B->D
+    graph_add_edge(&g, 2, 4); // C->E
+    graph_add_edge(&g, 3, 5); // D->F
+    graph_add_edge(&g, 4, 5); // E->F
+
+    // Step 1: Topological sort
+    int order[6];
+    if (!kahn_toposort(&g, order))
+    {
+        printf("Cycle detected: no valid schedule.\n");
+        graph_free(&g);
+        return 1;
     }
 
-    // 2. Lägg alla noder med indegree = 0 i kön
-    for (int i = 0; i < n; i++) {
-        if (indegree[i] == 0) {
-            queue[back++] = i;
-        }
+    printf("Topological order: ");
+    print_topo(names, order, n);
+    printf("Verify topological order: %s\n\n",
+           verify_topological_order(&g, order) ? "OK" : "FAIL");
+
+    // Step 2: Unlimited workers schedule (optimal)
+    SchedItem s2[6];
+    int ms2 = 0;
+    if (!schedule_unlimited(&g, duration, s2, &ms2))
+    {
+        printf("Cycle detected in step 2.\n");
+        graph_free(&g);
+        return 1;
     }
 
-    int idx = 0; // index i result-arrayen
+    printf("Step 2 (unlimited workers) schedule:\n");
+    print_schedule_unlimited(names, s2, n);
+    printf("Makespan: %d\n", ms2);
+    printf("Verify Step 2 schedule: %s\n\n",
+           verify_schedule_precedence(&g, s2, n) ? "OK" : "FAIL");
 
-    // 3. Processa kön
-    while (front < back) {
-        int u = queue[front++];   // ta ut första i kön
-        result[idx++] = u;        // lägg i resultatordningen
+    // Step 3: Limited workers schedule (heuristic)
+    const int m_workers = 2;
+    SchedItem s3[6];
+    int ms3 = 0;
 
-        // 4. "Ta bort" kanten u -> v för alla grannar v
-        for (int v = 0; v < n; v++) {
-            if (adj[u][v] == 1) {
-                indegree[v]--;
-                if (indegree[v] == 0) {
-                    queue[back++] = v;
-                }
-            }
-        }
+    if (!schedule_limited_workers(&g, duration, m_workers, s3, &ms3))
+    {
+        printf("Error in step 3 (cycle or invalid workers).\n");
+        graph_free(&g);
+        return 1;
     }
 
-    // 5. Kolla om vi verkligen fick med alla noder (annars fanns en cykel)
-    if (idx != n) {
-        printf("Grafen har en cykel eller är inte en DAG!\n");
-    }
-}
+    printf("Step 3 (limited workers) schedule:\n");
+    print_schedule_limited(names, s3, n);
+    printf("Makespan: %d\n", ms3);
+    printf("Verify Step 3 schedule: %s\n",
+           verify_schedule_limited(&g, s3, n, m_workers) ? "OK" : "FAIL");
 
-int main(void) {
-    int n = 4; // antal tasks
-
-    // Namn på tasks (bara för utskrift)
-    const char *names[] = {"A", "B", "C", "D"};
-
-    // Adjacency matrix adj[i][j] = 1 om det finns en kant i->j (i måste före j)
-    int adj[MAXN][MAXN] = {0};
-
-    // A = 0, B = 1, C = 2, D = 3
-    // B beror på A: A -> B  =>  edge 0 -> 1
-    adj[0][1] = 1;
-    // C beror på A: A -> C  =>  edge 0 -> 2
-    adj[0][2] = 1;
-    // D beror på B och C: B -> D, C -> D
-    adj[1][3] = 1;
-    adj[2][3] = 1;
-
-    int result[MAXN];
-
-    topo_sort_kahn(n, adj, result);
-
-    printf("Topologisk ordning:\n");
-    for (int i = 0; i < n; i++) {
-        printf("%s ", names[result[i]]);
-    }
-    printf("\n");
-
+    graph_free(&g);
     return 0;
 }
