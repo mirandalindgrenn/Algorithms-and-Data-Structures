@@ -1,25 +1,23 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include <stddef.h>
-
 typedef struct
 {
-    int *data;
-    int size;
+    int *a;
+    int n;
     int cap;
-} IntVec;
-
-void vec_init(IntVec *v);
-void vec_free(IntVec *v);
-void vec_push(IntVec *v, int x);
+} Vec;
 
 typedef struct
 {
-    int n;       // number of tasks
-    IntVec *adj; // adj[u] = successors v
-    int *indeg;  // indeg[v] = number of prerequisites
+    int n;      // number of tasks
+    Vec *succ;  // succ[u] = list of successors v
+    int *indeg; // indeg[v] = number of prerequisites
 } Graph;
+
+void vec_init(Vec *v);
+void vec_free(Vec *v);
+void vec_push(Vec *v, int x);
 
 Graph graph_create(int n);
 void graph_free(Graph *g);

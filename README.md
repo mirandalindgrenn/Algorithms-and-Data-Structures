@@ -1,13 +1,17 @@
-# Task Scheduling (Project 2)
+# Task scheduling
 
-Implements task scheduling with dependencies (DAG):
+Build:
 
-1. **Topological sorting** (Kahn's algorithm)
-2. **Unlimited workers + durations**: earliest-start schedule (optimal makespan / critical path length)
-3. **Limited workers (m)**: heuristic list scheduling using bottom-level priority
+- make
 
-## Build
+Run:
 
-```bash
-make
-```
+- ./scheduler
+
+Tests:
+
+- make test
+
+Clean:
+
+- make clean

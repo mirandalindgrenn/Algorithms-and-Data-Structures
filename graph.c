@@ -2,71 +2,67 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void vec_init(IntVec *v)
+void vec_init(Vec *v)
 {
-    v->data = NULL;
-    v->size = 0;
+    v->a = NULL;
+    v->n = 0;
     v->cap = 0;
 }
 
-void vec_free(IntVec *v)
+void vec_free(Vec *v)
 {
-    free(v->data);
-    v->data = NULL;
-    v->size = 0;
+    free(v->a);
+    v->a = NULL;
+    v->n = 0;
     v->cap = 0;
 }
 
-void vec_push(IntVec *v, int x)
+void vec_push(Vec *v, int x)
 {
-    if (v->size == v->cap)
+    if (v->n == v->cap)
     {
-        int newcap = (v->cap == 0) ? 4 : v->cap * 2;
-        int *nd = (int *)realloc(v->data, (size_t)newcap * sizeof(int));
-        if (!nd)
+        int newcap = (v->cap == 0) ? 4 : 2 * v->cap;
+        int *na = realloc(v->a, sizeof(int) * newcap);
+        if (!na)
         {
             fprintf(stderr, "Out of memory\n");
             exit(1);
         }
-        v->data = nd;
+        v->a = na;
         v->cap = newcap;
     }
-    v->data[v->size++] = x;
+    v->a[v->n++] = x;
 }
 
 Graph graph_create(int n)
 {
     Graph g;
     g.n = n;
-    g.adj = (IntVec *)malloc((size_t)n * sizeof(IntVec));
-    g.indeg = (int *)calloc((size_t)n, sizeof(int));
-    if (!g.adj || !g.indeg)
+    g.succ = malloc(sizeof(Vec) * n);
+    g.indeg = calloc(n, sizeof(int));
+    if (!g.succ || !g.indeg)
     {
         fprintf(stderr, "Out of memory\n");
         exit(1);
     }
-
     for (int i = 0; i < n; i++)
-        vec_init(&g.adj[i]);
+        vec_init(&g.succ[i]);
     return g;
 }
 
 void graph_free(Graph *g)
 {
-    if (!g)
-        return;
     for (int i = 0; i < g->n; i++)
-        vec_free(&g->adj[i]);
-    free(g->adj);
-    g->adj = NULL;
+        vec_free(&g->succ[i]);
+    free(g->succ);
     free(g->indeg);
+    g->succ = NULL;
     g->indeg = NULL;
     g->n = 0;
 }
 
 void graph_add_edge(Graph *g, int u, int v)
 {
-    // edge u -> v means u must finish before v can start
-    vec_push(&g->adj[u], v);
-    g->indeg[v] += 1;
+    vec_push(&g->succ[u], v);
+    g->indeg[v]++;
 }
