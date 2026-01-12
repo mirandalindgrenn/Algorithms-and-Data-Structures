@@ -11,11 +11,11 @@ typedef struct
     int worker; // -1 for step 2
 } SchedItem;
 
-// Step 2: unlimited workers -> EST/EFT. Returns 1 if OK else 0 if cycle.
+// step 2: unlimited workers -> EST/EFT. Returns 1 if OK, 0 if cycle
 int schedule_unlimited(const Graph *g, const int *duration,
                        int *EST, int *EFT, int *makespan);
 
-// Step 3: limited workers (m) -> list scheduling. Returns 1 if OK else 0 if cycle.
+// step 3: limited workers (m) -> list scheduling. Returns 1 if OK 0 if cycle.
 int schedule_limited(const Graph *g, const int *duration, int m,
                      SchedItem *out, int *out_n, int *makespan);
 

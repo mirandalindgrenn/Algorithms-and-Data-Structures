@@ -5,6 +5,7 @@
 
 int main(void)
 {
+    int make_cycle = 0;
     // Example: tasks A..F => 0..5
     int n = 6;
     const char *name[] = {"A", "B", "C", "D", "E", "F"};
@@ -13,12 +14,21 @@ int main(void)
     int duration[] = {3, 2, 4, 5, 1, 2};
 
     Graph g = graph_create(n);
+
+    printf("[DEBUG main] n=%d\n", n);
+    printf("[DEBUG main] g.n=%d g.succ=%p g.indeg=%p\n", g.n, (void *)g.succ, (void *)g.indeg);
+    fflush(stdout);
     // edges (prerequisites)
     graph_add_edge(&g, 0, 3); // A -> D
     graph_add_edge(&g, 1, 3); // B -> D
     graph_add_edge(&g, 2, 4); // C -> E
     graph_add_edge(&g, 3, 5); // D -> F
     graph_add_edge(&g, 4, 5); // E -> F
+
+    if (make_cycle)
+    {
+        graph_add_edge(&g, 5, 0); // F -> A
+    }
 
     // Step 1: topological order
     int order[6];

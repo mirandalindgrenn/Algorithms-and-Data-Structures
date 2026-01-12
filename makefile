@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-O2 -Wall -Wextra -std=c11
+CFLAGS=-O1 -g -Wall -Wextra -std=c11 -fsanitize=address -fno-omit-frame-pointer
+
 
 OBJS=main.o graph.o topo.o schedule.o
 

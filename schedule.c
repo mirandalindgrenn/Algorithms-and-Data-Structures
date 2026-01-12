@@ -3,9 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* =========================================================
-   Step 2: Unlimited workers (EST / EFT)
-   ========================================================= */
+/* step 2: unlimited workers */
 
 int schedule_unlimited(const Graph *g, const int *duration,
                        int *EST, int *EFT, int *makespan)
@@ -18,7 +16,7 @@ int schedule_unlimited(const Graph *g, const int *duration,
         exit(1);
     }
 
-    /* Topological order is required */
+    /* Topological order required */
     if (!kahn_toposort(g, order))
     {
         free(order);
@@ -31,13 +29,13 @@ int schedule_unlimited(const Graph *g, const int *duration,
         EFT[i] = 0;
     }
 
-    /* Process tasks in topological order */
+    /* process tasks in topological order */
     for (int i = 0; i < n; i++)
     {
         int v = order[i];
         int best = 0;
 
-        /* Find maximum EFT among predecessors */
+        /* find maximum EFT among predecessors */
         for (int u = 0; u < n; u++)
         {
             for (int j = 0; j < g->succ[u].n; j++)
@@ -64,10 +62,7 @@ int schedule_unlimited(const Graph *g, const int *duration,
     return 1;
 }
 
-/* =========================================================
-   Helper: Bottom-level computation
-   bl[v] = duration[v] + max_{v->s} bl[s]
-   ========================================================= */
+/* helper: bottom-level computation bl[v] = duration[v] + max_{v->s} bl[s]*/
 
 static int compute_bottom_level(const Graph *g,
                                 const int *duration,
@@ -90,7 +85,7 @@ static int compute_bottom_level(const Graph *g,
     for (int v = 0; v < n; v++)
         bl[v] = duration[v];
 
-    /* Traverse in reverse topological order */
+    /* traverse in reverse order */
     for (int i = n - 1; i >= 0; i--)
     {
         int v = order[i];
@@ -109,11 +104,7 @@ static int compute_bottom_level(const Graph *g,
     return 1;
 }
 
-/* =========================================================
-   Step 3: List scheduling with limited workers
-   ========================================================= */
-
-/* ---------- Max-heap for ready tasks (priority = bl) ---------- */
+/*step 3: list scheduling limited workers. Max-heap for ready tasks (priority = bl)*/
 
 typedef struct
 {
@@ -198,7 +189,7 @@ static int maxh_pop(MaxHeap *h)
     return ret;
 }
 
-/* ---------- Min-heap for running tasks (by finish time) ---------- */
+/* min-heap for running tasks by finish time*/
 
 typedef struct
 {
@@ -301,7 +292,7 @@ static void minh_pop(MinHeap *h, int *finish, int *worker, int *task)
     }
 }
 
-/* ---------- Limited workers scheduling ---------- */
+/* limited workers scheduling */
 
 int schedule_limited(const Graph *g, const int *duration, int m,
                      SchedItem *out, int *out_n, int *makespan)

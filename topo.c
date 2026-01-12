@@ -4,6 +4,10 @@
 
 int kahn_toposort(const Graph *g, int *order)
 {
+    printf("[DEBUG topo] g=%p g->n=%d g->succ=%p g->indeg=%p\n",
+           (void *)g, g->n, (void *)g->succ, (void *)g->indeg);
+    fflush(stdout);
+
     int n = g->n;
 
     int *indeg = malloc(sizeof(int) * n);
@@ -12,6 +16,7 @@ int kahn_toposort(const Graph *g, int *order)
         fprintf(stderr, "Out of memory\n");
         exit(1);
     }
+
     for (int i = 0; i < n; i++)
         indeg[i] = g->indeg[i];
 
@@ -28,6 +33,7 @@ int kahn_toposort(const Graph *g, int *order)
             q[back++] = i;
 
     int k = 0;
+
     while (front < back)
     {
         int u = q[front++];
